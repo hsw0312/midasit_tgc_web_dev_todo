@@ -1,0 +1,65 @@
+{
+    // Use IntelliSense to learn about possible attributes.
+    // Hover to view descriptions of existing attributes.
+    // For more information, visit: https://go.microsoft.com/fwlink/?linkid=830387
+    "version": "0.2.0",
+    "configurations": [
+        
+        {
+            "type": "lldb",
+            "request": "launch",
+            "name": "Debug unit tests in library 'midasit_tgc_web_dev_todo'",
+            "cargo": {
+                "args": [
+                    "test",
+                    "--no-run",
+                    "--lib",
+                    "--package=midasit_tgc_web_dev_todo"
+                ],
+                "filter": {
+                    "name": "midasit_tgc_web_dev_todo",
+                    "kind": "lib"
+                }
+            },
+            "args": [],
+            "cwd": "${workspaceFolder}"
+        },
+        {
+            "type": "lldb",
+            "request": "launch",
+            "name": "Debug executable 'midasit_tgc_web_dev_todo'",
+            "cargo": {
+                "args": [
+                    "build",
+                    "--bin=midasit_tgc_web_dev_todo",
+                    "--package=midasit_tgc_web_dev_todo"
+                ],
+                "filter": {
+                    "name": "midasit_tgc_web_dev_todo",
+                    "kind": "bin"
+                }
+            },
+            "args": [],
+            "cwd": "${workspaceFolder}"
+        },
+        {
+            "type": "lldb",
+            "request": "launch",
+            "name": "Debug unit tests in executable 'midasit_tgc_web_dev_todo'",
+            "cargo": {
+                "args": [
+                    "test",
+                    "--no-run",
+                    "--bin=midasit_tgc_web_dev_todo",
+                    "--package=midasit_tgc_web_dev_todo"
+                ],
+                "filter": {
+                    "name": "midasit_tgc_web_dev_todo",
+                    "kind": "bin"
+                }
+            },
+            "args": [],
+            "cwd": "${workspaceFolder}"
+        }
+    ]
+}

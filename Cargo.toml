@@ -1,0 +1,20 @@
+[package]
+name = "midasit_tgc_web_dev_todo"
+version = "0.1.0"
+edition = "2021"
+
+# See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
+
+[dependencies]
+actix-web = { version = "4", features = ["rustls"] }
+serde = { version = "1.0", features = ["derive"] }
+dotenv = "0.15"
+derive_more = "0.99.0"
+
+#rbatis deps
+rbs = { version = "4.5"}
+rbatis = { version = "4.5"}
+rbdc-mysql={version="4.5"}
+rbdc-mssql={version="4.5"}
+
+rbdc-pool-deadpool = {version="4.5.7"}
