@@ -1,2 +1,2 @@
 pub mod repository;
-mod schema;
+pub mod schema;
