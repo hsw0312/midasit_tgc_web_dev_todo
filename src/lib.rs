@@ -5,6 +5,10 @@ pub mod todo;
 use actix_web::{get, head, HttpResponse, Responder, Result};
 use serde::Serialize;
 
+pub fn health_config(cfg: &mut actix_web::web::ServiceConfig) {
+    cfg.service(head_health).service(get_health).service(hello);
+}
+
 #[head("/health.html")]
 async fn head_health() -> impl Responder {
     HttpResponse::Ok().body("true")

@@ -12,9 +12,7 @@ async fn main() -> std::io::Result<()> {
     HttpServer::new(move || {
         App::new()
             .app_data(app_state.clone())
-            .service(head_health)
-            .service(get_health)
-            .service(hello)
+            .configure(health_config)
             .service(todo::controller::get_todo)
             .service(todo::controller::get_todos)
             .service(todo::controller::post_todo)
