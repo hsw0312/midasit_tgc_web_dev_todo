@@ -6,11 +6,11 @@ use super::request::CreateTodoRequest;
 pub struct TodoDto {
     pub id: i32,
     pub content: String,
-    pub done: bool,
+    pub done: i8,
 }
 
 impl TodoDto {
-    pub fn new(id: i32, content: String, done: bool) -> Self {
+    pub fn new(id: i32, content: String, done: i8) -> Self {
         Self { id, content, done }
     }
 
@@ -18,7 +18,7 @@ impl TodoDto {
         Self {
             id: 0,
             content: rq.content.clone(),
-            done: false,
+            done: 0,
         }
     }
 }
