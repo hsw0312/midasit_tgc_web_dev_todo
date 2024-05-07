@@ -23,4 +23,12 @@ impl TodoRepository {
     pub async fn select_all(&self) -> Result<Vec<Todo>, rbatis::rbdc::Error> {
         Todo::select_all(&self.mysql_pool).await
     }
+
+    pub async fn put_todo(&self, data: Todo) -> Result<ExecResult, rbatis::rbdc::Error> {
+        Todo::update_by_column(&self.mysql_pool, &data, "id").await
+    }
+
+    pub async fn delete_todo_by_id(&self, id: i32) -> Result<ExecResult, rbatis::rbdc::Error> {
+        Todo::delete_by_column(&self.mysql_pool, "id", &id.to_string()).await
+    }
 }
