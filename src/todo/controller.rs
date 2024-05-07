@@ -1,4 +1,4 @@
-use actix_web::{get, post, web, Responder};
+use actix_web::{delete, get, post, put, web, Responder};
 
 use crate::{
     db::AppState,
@@ -29,11 +29,35 @@ pub async fn post_todo(
     data: web::Json<crate::todo::dto::request::CreateTodoRequest>,
     app_state: web::Data<AppState>,
 ) -> actix_web::Result<impl Responder> {
+    web::block(move || service::post_todo(TodoDto::new_from_request(data.into_inner()), app_state))
+        .await?
+        .await?;
+
+    Ok("".to_string())
+}
+
+#[put("/todo")]
+pub async fn put_todo(
+    data: web::Json<crate::todo::dto::request::UpdateTodoRequest>,
+    app_state: web::Data<AppState>,
+) -> actix_web::Result<impl Responder> {
     web::block(move || {
-        service::post_todo(TodoDto::new_from_request(data.into_inner()), app_state)
+        service::update_todo(TodoDto::update_from_request(data.into_inner()), app_state)
     })
     .await?
     .await?;
+
+    Ok("".to_string())
+}
+
+#[delete("/todo/{id}")]
+pub async fn delete_todo(
+    id: web::Path<i32>,
+    data: web::Data<AppState>,
+) -> actix_web::Result<impl Responder> {
+    web::block(move || service::delete_todo_by_id(id.into_inner(), data))
+        .await?
+        .await?;
 
     Ok("".to_string())
 }
