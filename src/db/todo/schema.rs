@@ -7,7 +7,7 @@ use rbatis::impl_select;
 pub struct Todo {
     pub id: i32,
     pub content: Option<String>,
-    pub done: Option<bool>,
+    pub done: Option<i8>,
 }
 
 crud!(Todo {});
