@@ -29,11 +29,9 @@ pub async fn post_todo(
     data: web::Json<crate::todo::dto::request::CreateTodoRequest>,
     app_state: web::Data<AppState>,
 ) -> actix_web::Result<impl Responder> {
-    web::block(move || {
-        service::post_todo(TodoDto::new_from_request(data.into_inner()), app_state)
-    })
-    .await?
-    .await?;
+    web::block(move || service::post_todo(TodoDto::new_from_request(data.into_inner()), app_state))
+        .await?
+        .await?;
 
     Ok("".to_string())
 }

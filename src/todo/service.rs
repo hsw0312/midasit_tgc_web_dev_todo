@@ -2,7 +2,6 @@ use actix_web::{web, Result};
 
 use actix_web::http::StatusCode;
 use derive_more::{Display, Error, From};
-use rbatis::rbdc::db::ExecResult;
 
 use crate::db::todo::repository;
 use crate::db::AppState;

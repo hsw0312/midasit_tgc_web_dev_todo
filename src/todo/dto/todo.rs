@@ -10,9 +10,9 @@ pub struct TodoDto {
 }
 
 impl TodoDto {
-    pub fn new(id: i32, content: String, done: i8) -> Self {
-        Self { id, content, done }
-    }
+    // pub fn new(id: i32, content: String, done: i8) -> Self {
+    //     Self { id, content, done }
+    // }
 
     pub fn new_from_request(rq: CreateTodoRequest) -> Self {
         Self {

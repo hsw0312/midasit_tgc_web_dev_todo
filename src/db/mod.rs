@@ -8,5 +8,5 @@ pub struct AppState {
 }
 
 pub async fn sync_table(mysql_pool: &RBatis) {
-    todo::schema::Todo::sync_table_todo(&mysql_pool).await;
+    todo::schema::Todo::sync_table_todo(mysql_pool).await;
 }
