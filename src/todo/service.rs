@@ -74,3 +74,72 @@ pub async fn post_todo(
         Err(e) => Err(TodoError::MysqlError(e)),
     }
 }
+
+pub async fn delete_todo(
+    id: i32,
+    data: web::Data<AppState>,
+) -> Result<(), TodoError> {
+    let todo_repo = repository::TodoRepository::new(data.mysql_pool.clone());
+    let todo = todo_repo.delete_todo_by_id(id).await;
+    match todo {
+        Ok(_) => Ok(()),
+        Err(e) => Err(TodoError::MysqlError(e)),
+    }
+}
+
+pub async fn put_todo(
+    data: crate::todo::dto::request::PutTodoRequest,
+    app_state: web::Data<AppState>,
+) -> Result<(), TodoError> {
+    let todo_repo = repository::TodoRepository::new(app_state.mysql_pool.clone());
+    let todo = todo_repo
+        .put_todo(crate::db::todo::schema::Todo {
+            id: data.id,
+            content: Some(data.content),
+            done: Some(data.done),
+        })
+        .await;
+    match todo {
+        Ok(_) => Ok(()),
+        Err(e) => Err(TodoError::MysqlError(e)),
+    }
+}
+
+pub async fn put_todo_content(
+    data: crate::todo::dto::request::PutTodoContentRequest,
+    app_state: web::Data<AppState>,
+) -> Result<(), TodoError> {
+    let todo_repo = repository::TodoRepository::new(app_state.mysql_pool.clone());
+    let todo = todo_repo
+        .put_todo(crate::db::todo::schema::Todo {
+            id: data.id,
+            content: Some(data.content),
+            done: None,
+        })
+        .await;
+    match todo {
+        Ok(_) => Ok(()),
+        Err(e) => Err(TodoError::MysqlError(e)),
+    }
+}
+
+pub async fn put_todo_done(
+    data: crate::todo::dto::request::PutTodoDoneRequest,
+    app_state: web::Data<AppState>,
+) -> Result<(), TodoError> {
+    let todo_repo = repository::TodoRepository::new(app_state.mysql_pool.clone());
+    let todo = todo_repo
+        .put_todo(crate::db::todo::schema::Todo {
+            id: data.id,
+            content: None,
+            done: Some(data.done),
+        })
+        .await;
+    match todo {
+        Ok(_) => Ok(()),
+        Err(e) => Err(TodoError::MysqlError(e)),
+    }
+}
+
+
+
