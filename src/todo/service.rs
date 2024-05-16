@@ -22,15 +22,6 @@ impl actix_web::ResponseError for TodoError {
             TodoError::NotFound => StatusCode::NOT_FOUND,
         }
     }
-
-    fn error_response(&self) -> HttpResponse {
-        match self {
-            TodoError::MysqlError(_) | TodoError::Unknown => {
-                HttpResponse::InternalServerError().body("Internal Server Error")
-            }
-            TodoError::NotFound => HttpResponse::NotFound().body("Todo Not Found"),
-        }
-    }
 }
 
 pub async fn get_todo(id: i32, data: web::Data<AppState>) -> Result<TodoQuery, TodoError> {
