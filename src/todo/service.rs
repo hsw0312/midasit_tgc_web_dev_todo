@@ -1,4 +1,4 @@
-use actix_web::{web, Result};
+use actix_web::{web, Result, HttpResponse, ResponseError};
 
 use actix_web::http::StatusCode;
 use derive_more::{Display, Error, From};
@@ -11,6 +11,7 @@ use super::dto::response::TodoQuery;
 #[derive(Debug, Display, Error, From)]
 pub enum TodoError {
     MysqlError(rbatis::Error),
+    NotFound,
     Unknown,
 }
 
@@ -18,6 +19,7 @@ impl actix_web::ResponseError for TodoError {
     fn status_code(&self) -> StatusCode {
         match self {
             TodoError::MysqlError(_) | TodoError::Unknown => StatusCode::INTERNAL_SERVER_ERROR,
+            TodoError::NotFound => StatusCode::NOT_FOUND,
         }
     }
 }
@@ -31,8 +33,26 @@ pub async fn get_todo(id: i32, data: web::Data<AppState>) -> Result<TodoQuery, T
                 content: todo.content.unwrap(),
                 done: todo.done.unwrap(),
             }),
-            None => Err(TodoError::Unknown),
+            None => Err(TodoError::NotFound),
         },
+        Err(e) => Err(TodoError::MysqlError(e)),
+    }
+}
+
+pub async fn get_done_todos(done: i8, data: web::Data<AppState>) -> Result<Vec<TodoQuery>, TodoError> {
+    let todo_repo = repository::TodoRepository::new(data.mysql_pool.clone());
+    let todos = todo_repo.select_done_todos(done).await;
+    match todos {
+        Ok(todos) => {
+            let mut todo_queries = Vec::new();
+            for todo in todos {
+                todo_queries.push(TodoQuery {
+                    content: todo.content.unwrap(),
+                    done: todo.done.unwrap(),
+                });
+            }
+            Ok(todo_queries)
+        }
         Err(e) => Err(TodoError::MysqlError(e)),
     }
 }
@@ -71,6 +91,96 @@ pub async fn post_todo(
 
     match todo {
         Ok(_) => Ok(()),
+        Err(e) => Err(TodoError::MysqlError(e)),
+    }
+}
+
+pub async fn put_todo(
+    todo: crate::todo::dto::todo::TodoDto,
+    app_state: web::Data<AppState>,
+) -> Result<(), TodoError> {
+    let todo_repo = repository::TodoRepository::new(app_state.mysql_pool.clone());
+
+    let todo = todo_repo
+        .put_todo(crate::db::todo::schema::Todo {
+            id: todo.id,
+            content: Some(todo.content),
+            done: Some(todo.done),
+        }).await;
+
+    match todo {
+        Ok(exec_result) => {
+            if exec_result.rows_affected > 0 {
+                Ok(())
+            } else {
+                Err(TodoError::NotFound)
+            }
+        },
+        Err(e) => Err(TodoError::MysqlError(e)),
+    }
+}
+
+pub async fn put_todo_content(
+    todo: crate::todo::dto::todo::TodoDto,
+    app_state: web::Data<AppState>,
+) -> Result<(), TodoError> {
+    let todo_repo = repository::TodoRepository::new(app_state.mysql_pool.clone());
+
+    let todo = todo_repo
+        .put_todo(crate::db::todo::schema::Todo {
+            id: todo.id,
+            content: Some(todo.content),
+            done: None,
+        }).await;
+
+    match todo {
+        Ok(exec_result) => {
+            if exec_result.rows_affected > 0 {
+                Ok(())
+            } else {
+                Err(TodoError::NotFound)
+            }
+        },
+        Err(e) => Err(TodoError::MysqlError(e)),
+    }
+}
+
+pub async fn put_todo_done(
+    todo: crate::todo::dto::todo::TodoDto,
+    app_state: web::Data<AppState>,
+) -> Result<(), TodoError> {
+    let todo_repo = repository::TodoRepository::new(app_state.mysql_pool.clone());
+
+    let todo = todo_repo
+        .put_todo(crate::db::todo::schema::Todo {
+            id: todo.id,
+            content: None,
+            done: Some(todo.done),
+        }).await;
+
+    match todo {
+        Ok(exec_result) => {
+            if exec_result.rows_affected > 0 {
+                Ok(())
+            } else {
+                Err(TodoError::NotFound)
+            }
+        },
+        Err(e) => Err(TodoError::MysqlError(e)),
+    }
+}
+
+pub async fn delete_todo_by_id(id: i32, data: web::Data<AppState>) -> Result<(), TodoError> {
+    let todo_repo = repository::TodoRepository::new(data.mysql_pool.clone());
+    let todo = todo_repo.delete_todo_by_id(id).await;
+    match todo {
+        Ok(exec_result) => {
+            if exec_result.rows_affected > 0 {
+                Ok(())
+            } else {
+                Err(TodoError::NotFound)
+            }
+        },
         Err(e) => Err(TodoError::MysqlError(e)),
     }
 }

@@ -20,6 +20,10 @@ impl TodoRepository {
         Todo::select_by_id(&self.mysql_pool, id).await
     }
 
+    pub async fn select_done_todos(&self, done: i8) -> Result<Vec<Todo>, rbatis::rbdc::Error> {
+        Todo::select_by_column(&self.mysql_pool, "done", done).await
+    }
+
     pub async fn select_all(&self) -> Result<Vec<Todo>, rbatis::rbdc::Error> {
         Todo::select_all(&self.mysql_pool).await
     }
