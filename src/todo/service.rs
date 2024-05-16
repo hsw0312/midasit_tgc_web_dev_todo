@@ -74,3 +74,36 @@ pub async fn post_todo(
         Err(e) => Err(TodoError::MysqlError(e)),
     }
 }
+
+pub async fn delete_todo(id: i32, app_state: web::Data<AppState>) -> Result<(), TodoError> {
+    let todo_repo = repository::TodoRepository::new(app_state.mysql_pool.clone());
+    let todo = todo_repo.select_todo(id).await;
+
+    match todo {
+        Ok(Some(_)) => {
+            todo_repo.delete_todo_by_id(id).await.map_err(|e| TodoError::MysqlError(e))?;
+            Ok(())
+        }
+        Ok(None) => Err(TodoError::Unknown),
+        Err(e) => Err(TodoError::MysqlError(e)),
+    }
+}
+
+pub async fn update_todo_by_id(
+    id: i32,
+    content: Option<String>,
+    done: Option<i8>,
+    app_state: &web::Data<AppState>,
+) -> Result<(), TodoError> {
+    let todo_repo = repository::TodoRepository::new(app_state.mysql_pool.clone());
+    let todo = crate::db::todo::schema::Todo {
+        id,
+        content,
+        done
+    };
+
+    todo_repo.put_todo(todo).await?;
+    Ok(())
+}
+
+
