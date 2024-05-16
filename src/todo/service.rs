@@ -1,4 +1,4 @@
-use actix_web::{web, Result};
+use actix_web::{web, Result, HttpResponse, ResponseError};
 
 use actix_web::http::StatusCode;
 use derive_more::{Display, Error, From};
@@ -11,6 +11,7 @@ use super::dto::response::TodoQuery;
 #[derive(Debug, Display, Error, From)]
 pub enum TodoError {
     MysqlError(rbatis::Error),
+    NotFound,
     Unknown,
 }
 
@@ -18,6 +19,16 @@ impl actix_web::ResponseError for TodoError {
     fn status_code(&self) -> StatusCode {
         match self {
             TodoError::MysqlError(_) | TodoError::Unknown => StatusCode::INTERNAL_SERVER_ERROR,
+            TodoError::NotFound => StatusCode::NOT_FOUND,
+        }
+    }
+
+    fn error_response(&self) -> HttpResponse {
+        match self {
+            TodoError::MysqlError(_) | TodoError::Unknown => {
+                HttpResponse::InternalServerError().body("Internal Server Error")
+            }
+            TodoError::NotFound => HttpResponse::NotFound().body("Todo Not Found"),
         }
     }
 }
@@ -31,7 +42,7 @@ pub async fn get_todo(id: i32, data: web::Data<AppState>) -> Result<TodoQuery, T
                 content: todo.content.unwrap(),
                 done: todo.done.unwrap(),
             }),
-            None => Err(TodoError::Unknown),
+            None => Err(TodoError::NotFound),
         },
         Err(e) => Err(TodoError::MysqlError(e)),
     }
@@ -107,7 +118,13 @@ pub async fn put_todo(
         }).await;
 
     match todo {
-        Ok(_) => Ok(()),
+        Ok(exec_result) => {
+            if exec_result.rows_affected > 0 {
+                Ok(())
+            } else {
+                Err(TodoError::NotFound)
+            }
+        },
         Err(e) => Err(TodoError::MysqlError(e)),
     }
 }
@@ -126,7 +143,13 @@ pub async fn put_todo_content(
         }).await;
 
     match todo {
-        Ok(_) => Ok(()),
+        Ok(exec_result) => {
+            if exec_result.rows_affected > 0 {
+                Ok(())
+            } else {
+                Err(TodoError::NotFound)
+            }
+        },
         Err(e) => Err(TodoError::MysqlError(e)),
     }
 }
@@ -145,7 +168,13 @@ pub async fn put_todo_done(
         }).await;
 
     match todo {
-        Ok(_) => Ok(()),
+        Ok(exec_result) => {
+            if exec_result.rows_affected > 0 {
+                Ok(())
+            } else {
+                Err(TodoError::NotFound)
+            }
+        },
         Err(e) => Err(TodoError::MysqlError(e)),
     }
 }
@@ -154,7 +183,13 @@ pub async fn delete_todo_by_id(id: i32, data: web::Data<AppState>) -> Result<(),
     let todo_repo = repository::TodoRepository::new(data.mysql_pool.clone());
     let todo = todo_repo.delete_todo_by_id(id).await;
     match todo {
-        Ok(_) => Ok(()),
+        Ok(exec_result) => {
+            if exec_result.rows_affected > 0 {
+                Ok(())
+            } else {
+                Err(TodoError::NotFound)
+            }
+        },
         Err(e) => Err(TodoError::MysqlError(e)),
     }
 }
