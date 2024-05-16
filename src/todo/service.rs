@@ -112,6 +112,44 @@ pub async fn put_todo(
     }
 }
 
+pub async fn put_todo_content(
+    todo: crate::todo::dto::todo::TodoDto,
+    app_state: web::Data<AppState>,
+) -> Result<(), TodoError> {
+    let todo_repo = repository::TodoRepository::new(app_state.mysql_pool.clone());
+
+    let todo = todo_repo
+        .put_todo(crate::db::todo::schema::Todo {
+            id: todo.id,
+            content: Some(todo.content),
+            done: None,
+        }).await;
+
+    match todo {
+        Ok(_) => Ok(()),
+        Err(e) => Err(TodoError::MysqlError(e)),
+    }
+}
+
+pub async fn put_todo_done(
+    todo: crate::todo::dto::todo::TodoDto,
+    app_state: web::Data<AppState>,
+) -> Result<(), TodoError> {
+    let todo_repo = repository::TodoRepository::new(app_state.mysql_pool.clone());
+
+    let todo = todo_repo
+        .put_todo(crate::db::todo::schema::Todo {
+            id: todo.id,
+            content: None,
+            done: Some(todo.done),
+        }).await;
+
+    match todo {
+        Ok(_) => Ok(()),
+        Err(e) => Err(TodoError::MysqlError(e)),
+    }
+}
+
 pub async fn delete_todo_by_id(id: i32, data: web::Data<AppState>) -> Result<(), TodoError> {
     let todo_repo = repository::TodoRepository::new(data.mysql_pool.clone());
     let todo = todo_repo.delete_todo_by_id(id).await;
