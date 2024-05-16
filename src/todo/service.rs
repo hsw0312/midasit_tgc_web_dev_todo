@@ -37,6 +37,24 @@ pub async fn get_todo(id: i32, data: web::Data<AppState>) -> Result<TodoQuery, T
     }
 }
 
+pub async fn get_done_todos(done: i8, data: web::Data<AppState>) -> Result<Vec<TodoQuery>, TodoError> {
+    let todo_repo = repository::TodoRepository::new(data.mysql_pool.clone());
+    let todos = todo_repo.select_done_todos(done).await;
+    match todos {
+        Ok(todos) => {
+            let mut todo_queries = Vec::new();
+            for todo in todos {
+                todo_queries.push(TodoQuery {
+                    content: todo.content.unwrap(),
+                    done: todo.done.unwrap(),
+                });
+            }
+            Ok(todo_queries)
+        }
+        Err(e) => Err(TodoError::MysqlError(e)),
+    }
+}
+
 pub async fn get_todos(data: web::Data<AppState>) -> Result<Vec<TodoQuery>, TodoError> {
     let todo_repo = repository::TodoRepository::new(data.mysql_pool.clone());
     let todos = todo_repo.select_all().await;
@@ -69,6 +87,34 @@ pub async fn post_todo(
         })
         .await;
 
+    match todo {
+        Ok(_) => Ok(()),
+        Err(e) => Err(TodoError::MysqlError(e)),
+    }
+}
+
+pub async fn put_todo(
+    todo: crate::todo::dto::todo::TodoDto,
+    app_state: web::Data<AppState>,
+) -> Result<(), TodoError> {
+    let todo_repo = repository::TodoRepository::new(app_state.mysql_pool.clone());
+
+    let todo = todo_repo
+        .put_todo(crate::db::todo::schema::Todo {
+            id: todo.id,
+            content: Some(todo.content),
+            done: Some(todo.done),
+        }).await;
+
+    match todo {
+        Ok(_) => Ok(()),
+        Err(e) => Err(TodoError::MysqlError(e)),
+    }
+}
+
+pub async fn delete_todo_by_id(id: i32, data: web::Data<AppState>) -> Result<(), TodoError> {
+    let todo_repo = repository::TodoRepository::new(data.mysql_pool.clone());
+    let todo = todo_repo.delete_todo_by_id(id).await;
     match todo {
         Ok(_) => Ok(()),
         Err(e) => Err(TodoError::MysqlError(e)),
