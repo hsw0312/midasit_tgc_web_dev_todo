@@ -16,6 +16,10 @@ async fn main() -> std::io::Result<()> {
             .service(todo::controller::get_todo)
             .service(todo::controller::get_todos)
             .service(todo::controller::post_todo)
+            .service(todo::controller::put_todo)
+            .service(todo::controller::put_todo_by_contents)
+            .service(todo::controller::put_todo_by_done)
+            .service(todo::controller::delete_todo)
             .default_service(web::route().to(not_found))
     })
     .bind(("127.0.0.1", 8081))?
